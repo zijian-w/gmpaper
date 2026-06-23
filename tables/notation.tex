@@ -1,0 +1,39 @@
+\begin{table}[!htbp]
+    \centering
+    \small
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{ll}
+    \hline
+    Symbol & Meaning \\
+    \hline
+    $G=(V,E)$ & Precinct adjacency graph \\
+    $P$ & Number of precincts ($|V|$) \\
+    $V$ & Precinct vertex set ($V=[P]$) \\
+    $E$ & Adjacency edge set \\
+    $\mathcal{V}$ & District indicator space \\
+    $\mathcal{W}$ & Space of unordered $I$-tuples of $\mathcal{V}$ \\
+    $\mathcal{X}$ & Admissible plan space \\
+    $x$ & A plan in $\mathcal{X}$ \\
+    $w_p$ & Population weight of precinct $p$ \\
+    $I$ & Number of districts in a plan \\
+    $d_{\max}$ & Cap used in $d$ \\
+    $d$ & District-level distance \eqref{eq:dist_district} \\
+    $D$ & Plan-level distance \eqref{eq:dist_plan} \\
+    $K$ & Number of letters (district clusters) \\
+    $l$ & A letter (cluster centroid) \\
+    $L$ & Word degree (number of candidates kept) \\
+    $\mathcal{S}$ & Representative word set / strata \\
+    $s$ & A stratum (word) in $\mathcal{S}$ \\
+    $w_i(x)$ & $i$-th nearest word to plan $x$ \\
+    $\psi(x;s)$ & Unnormalized kernel \eqref{eq:psi_relative} \\
+    $\phi_s(x)$ & POU weight \eqref{eq:pou} \\
+    $T$ & Temperature parameter in \eqref{eq:psi_relative} \\
+    $\pi$ & Target distribution on plans \\
+    $\pi_s$ & Stratum distribution \eqref{eq:flux} \\
+    $z_s$ & Stratum weight $\be_{\pi}[\phi_s]$ \\
+    $F_{s,s'}$ & Flux matrix \eqref{eq:flux} \\
+    \hline
+\end{tabular}
+\caption{Summary of basic notations.}
+\label{tab:notation}
+\end{table}

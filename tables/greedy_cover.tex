@@ -1,0 +1,23 @@
+\begin{algorithm}[!htbp]
+\caption{Greedy subcover}
+\label{alg:greedy_subcover}
+\begin{algorithmic}[1]
+\Require Adjacency matrix $A\in\{0,1\}^{M\times|\mathcal{S}|}$
+\State $U \gets \{1,\dots,M\}$ \Comment{uncovered plan indices}
+\State $R \gets \mathcal{S}$ \Comment{remaining candidate words}
+\State $\mathcal{S}_0 \gets \emptyset$
+\While{$U\neq\emptyset$ and $R\neq\emptyset$}
+    \ForAll{$s\in R$}
+        \State $g(s) \gets \sum_{m\in U} A_{m,s}$ \Comment{number of newly covered plans}
+    \EndFor
+    \If{$\max_{s\in R} g(s)=0$}
+        \State \textbf{break}
+    \EndIf
+    \State pick any $s^\star \in\arg\max_{s\in R} g(s)$
+    \State $\mathcal{S}_0 \gets \mathcal{S}_0 \cup \{s^\star\}$
+    \State $U \gets \{m\in U: A_{m,s^\star}=0\}$ \Comment{remove newly covered plans}
+    \State $R \gets R\setminus\{s^\star\}$
+\EndWhile
+\State \Return $(\mathcal{S}_0,U)$ \Comment{$U=\emptyset$ when $A$ is fully covered}
+\end{algorithmic}
+\end{algorithm}

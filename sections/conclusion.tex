@@ -1,0 +1,9 @@
+\section{Conclusion}\label{sec:chap4 conclusion}
+
+In this paper, we introduce a computationally scalable pipeline that stratifies the space of redistricting plans.
+We first aggregate districts across sampled redistricting plans and apply a hierarchical correlation clustering algorithm \hccultra to identify representative districts (``letters'').
+We then use a beam search to find a small set of ``words'' around each plan.
+Each word is an unordered tuple of letters, and can be viewed as a representative plan.
+We take the union of these words to form the strata for stratified sampling via a partition unity that softly assigns plans to words based on their distances.
+To reduce redundancy among words while maintaining coverage, we apply a two-stage greedy set-cover approximation with a smaller threshold $\tau'=\eta\tau$ and a coverage threshold $\tau$.
+We illustrate our pipeline using real-world examples from Connecticut and North Carolina

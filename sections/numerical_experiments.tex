@@ -1,0 +1,147 @@
+\section{Numerical Experiments}\label{sec:chap4 numerical_experiments}
+In this section, we demonstrate our pipeline using a small-scale real-world example on Connecticut with five districts $|V|=462,|I|=5$.
+The data we use is obtained from the VEST project~\cite{mcdonald2008united} via~\cite{redistrictingdatahub}.
+\subsection{Exploratory analysis}\label{sec:connecticut}
+We apply the pipeline to redistricting plans of Connecticut, where $|V|=462$ precincts are partitioned into $I=5$ congressional districts.
+See Figure \ref{fig:ct_enacted_pop} for the enacted plan in $2022$ and population distribution. 
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=1.0\linewidth]{figures/ct_enacted_pop.png}
+    \caption{Population distribution for the enacted Connecticut plan.}
+    \label{fig:ct_enacted_pop}
+\end{figure}
+We work with $50$K samples from cycle walk with $\gamma=0$ (i.e. tree-count measure).
+We notice a clear ``elbow'' in the CT case, where dispersion drops sharply around $K=34$ as shown in Figure \ref{fig:ct_elbow}.
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=1.0\linewidth]{figures/ct_elbow.png}
+    \caption{Elbow plots for CT - left: dispersion metric against number of clusters, right: marginal improvements on the dispersion metric by taking consecutive differences. Dispersion shown is normalized by the first value when $K=5$.}
+    \label{fig:ct_elbow}
+\end{figure}
+From Figure \ref{fig:ct_merge_34} we can see that the merge of the two clusters in the south west corners corresponds to the sharp drop in dispersion, suggesting an optimal alphabet size of $K=34$.
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=1.0\linewidth]{figures/ct_merge_34.png}
+    \caption{The merges of \hccultra\space around the optimal elbow. Each row represents a merge performed by \hccultra of two clusters into one (indicated by left, right and merged) right before $k=33,34,35$. We annotate each merge by the sizes of the clusters involved, as well as the improvement in the dispersion objective. The color on a precinct $p$ indicates the fraction of districts within a cluster that contains $p$.}
+    \label{fig:ct_merge_34}
+\end{figure}
+We set an alphabet size of $K=34$ and choose a big enough beam search width of $L=500$ to capture all relevant words.
+Figure~\ref{fig:ct_top5_word_before_prune} visualizes the five words with the largest estimated stratum weights before pruning; several of these high-weight words are near-duplicates that differ only by small local letter substitutions.
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=1.0\linewidth]{figures/ct_top5_word_before_prune.png}
+    \caption{Top five words (by number of plans covered) before pruning. We visualize words by plotting the letters with different colors. Intersections between letters are highlighted in black lines.}
+    \label{fig:ct_top5_word_before_prune}
+\end{figure}
+
+To improve interpretability and reduce redundancy while preserving coverage of the observed plans, we construct the pruned set $\mathcal{S}_\eta$ using the two-stage greedy subcover in Algorithm~\ref{alg:eta_greedy_subcover}.
+Figure~\ref{fig:ct_top5_word_after_prune} shows that, after pruning, the top words (that covers most plans) are more diverse and correspond to distinct large-scale plan motifs rather than minor variations within the same mode.
+Word $9488$ covers most plans, hence appears in both Figure \ref{fig:ct_top5_word_before_prune} by definition and Figure \ref{fig:ct_top5_word_after_prune} since it is selected first in the initial greedy subcover of Algorithm~\ref{alg:eta_greedy_subcover}.
+Observe that the top word is also close to the $2022$ enacted plans.
+Note that the south west letter (in blue) remains a strong motif on the district level, although pruning reviews a slightly different variation of that letter (e.g. word $17690$).
+We also observe more dynamics on remaining four districts (excluding the south west district in blue) on the pruned set of words.
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=1.0\linewidth]{figures/ct_top5_word_after_prune.png}
+    \caption{Similar to Figure \ref{fig:ct_top5_word_before_prune} but for the pruned set $\mathcal{S}_\eta$ produced by the two-stage greedy subcover. Pruning removes near-duplicate strata while maintaining coverage of the sampled ensemble, yielding a more compact and interpretable set of representative words.}
+    \label{fig:ct_top5_word_after_prune}
+\end{figure}
+
+It is also interesting to see how the enacted plan fits into our strata, even though it follows a quite different measure.
+In practice, redistricting plans are typically proposed by legislators and accepted through a political process.
+See Figure \ref{fig:ct_enacted_words} for a visualization of the nearest words to the $2022$ enacted plan.
+We compare the three closest words before pruning and in the two-stage pruned set $\mathcal{S}_\eta$.
+As expected, the minimum distance between the enacted plan and the representative word set increases after pruning.
+Nevertheless, the closest word in the pruned word set, successfully capture the macroscopic spatial structure of the plan.
+Note that we do not see any highly specific local boundary geometry even before pruning, e.g. the dark blue district in the north-central region of the enacted plan.
+These localized features are intentionally smoothed out during the hierarchical clustering phase, which abstract districts into representative letters.
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=1.0\linewidth]{figures/ct_enacted_words.png}
+    \caption{We visualize the closest words to the enacted plan. The first and second row of the $2\times 3$ word plots shows the three closest words after and before pruning. For each word displayed, we annotate it by its distance to the enacted plan.}
+    \label{fig:ct_enacted_words}    
+\end{figure}
+
+Next, we compute stationary distributions using multiple choices of temperatures while keeping the range mapping function $\kappa$ fixed.
+Typically, we could tune $T$ and $\kappa$ based on empirical observations from stratified sampling.
+Since we do not implement stratified sampling in the current paper, we pick a generic $\kappa$ that maps the most of the (pruned) nearest neighbors into the $[0,1]$ range (and zero if a word is not within beam width).
+We vary the temperature in Figure \ref{fig:ct_stat_flux}.
+Specifically, we include the case of $T=0$ (the counting measure) as an example that is $\kappa$ independent.
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=1.0\linewidth]{figures/ct_stat_flux.png}
+    \caption{Stratum weights and flux for varying temperatures.}
+    \label{fig:ct_stat_flux}
+\end{figure}
+We see reasonable overlaps across most strata except for the smallest one, which is a word that corresponds to an atypical plan.
+See Figure \ref{fig:ct_top_bot_words} for more details, where we illustrate the most frequent and least frequent words together with example plans attached to those words.
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=1.0\linewidth]{figures/ct_top_bot_words.png}
+    \caption{Top and bottom three words according to stationary distribution. Words in the first row and example plans related to words in the second row.}
+    \label{fig:ct_top_bot_words}
+\end{figure}
+
+
+\FloatBarrier
+
+
+\subsection{Beyond $\gamma=0$}
+\FloatBarrier
+[WIP]\\
+In this section, we study how our strata construction generalizes to other $\gamma$s.
+As a first step, we calibrate the iso parameter to obtain, for each $\gamma$ from $0$ to $1$, an iso parameter that produces samples with isoperimetric ratio comparable to that of $(0,0)$.
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=1.0\linewidth]{figures/iso_calibration.png}
+    \caption{iso calibration}
+    \label{fig:iso_calibration}
+\end{figure}
+We run our pipeline for $\gamma$ from $0$ to $1$ and compare the spectral gap of the flux matrix. For each $\gamma$, we use two independent runs to show consistency.
+\FloatBarrier
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=1.0\linewidth]{figures/spectral_gap_two_seeds.png}
+    \caption{spectral gap two seeds}
+    \label{fig:spectral_gap_two_seeds}
+\end{figure}
+
+% internal comment: we have nc results but it's incomplete so i don't plan to include it
+% \subsection{North Carolina}\label{sec:north_carolina}
+% We next apply the pipeline to redistricting plans of North Carolina, where $|V|=2671$ precincts are partitioned into $I=14$ congressional districts.
+% In the NC case, the elbow appears at a larger $K$ due to the increase in the number of districts.
+% We see that the dispersion drops sharply around $K=129$, as shown in Figure~\ref{fig:nc_elbow}.
+% \begin{figure}[!htbp]
+%     \centering
+%     \includegraphics[width=1.0\linewidth]{figures/nc_elbow.png}
+%     \caption{Elbow plots for NC - left: dispersion metric against number of clusters, right: marginal improvements on the dispersion metric by taking consecutive differences.}
+%     \label{fig:nc_elbow}
+% \end{figure}
+% Figure~\ref{fig:nc_merge_129} visualizes the \hccultra merges around this elbow, suggesting an optimal alphabet size around $K=129$.
+% \begin{figure}[!htbp]
+%     \centering
+%     \includegraphics[width=1.0\linewidth]{figures/nc_merge_129.png}
+%     \caption{The merges of \hccultra around the elbow in the NC case. Each row represents a merge performed by \hccultra of two clusters into one (indicated by left, right and merged). The color on a precinct $p$ indicates the fraction of districts within a cluster that contains $p$.}
+%     \label{fig:nc_merge_129}
+% \end{figure}
+
+% We set an alphabet size of $K=129$ and choose a big enough beam search width of $L=1000$ to capture all relevant words.
+% Figure~\ref{fig:nc_top5_word_before_prune} visualizes the five words with the largest estimated stratum weights before pruning; as in the CT case, several of these high-weight words are near-duplicates that differ only by small local letter substitutions.
+% \begin{figure}[!htbp]
+%     \centering
+%     \includegraphics[width=1.0\linewidth]{figures/nc_top5_word_before_prune.png}
+%     \caption{Top five words (by number of plans covered) before pruning. We visualize words by plotting the letters with different colors. Intersections between letters are highlighted in black lines.}
+%     \label{fig:nc_top5_word_before_prune}
+% \end{figure}
+
+% We again construct the pruned set $\mathcal{S}_\eta$ using the two-stage greedy subcover in Algorithm~\ref{alg:eta_greedy_subcover}.
+% Figure~\ref{fig:nc_top5_word_after_prune} shows that, after pruning, the top words are more diverse and correspond to distinct plan motifs rather than minor variations.
+% Word $6132597$ covers most plans, hence appears in both Figure~\ref{fig:nc_top5_word_before_prune} (by definition) and Figure~\ref{fig:nc_top5_word_after_prune} since it is selected first in the initial greedy subcover of Algorithm~\ref{alg:eta_greedy_subcover}.
+% \begin{figure}[!htbp]
+%     \centering
+%     \includegraphics[width=1.0\linewidth]{figures/nc_top5_word_after_prune.png}
+%     \caption{Similar to Figure~\ref{fig:nc_top5_word_before_prune} but for the pruned set $\mathcal{S}_\eta$ produced by the two-stage greedy subcover. Pruning removes near-duplicate strata while maintaining coverage of the sampled ensemble, yielding a more compact and interpretable set of representative words.}
+%     \label{fig:nc_top5_word_after_prune}
+% \end{figure}
+% \FloatBarrier

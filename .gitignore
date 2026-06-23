@@ -1,0 +1,14 @@
+# LaTeX build outputs
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+
+# OS/browser sidecar files
+.DS_Store
+Thumbs.db
+*:Zone.Identifier

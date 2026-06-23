@@ -1,0 +1,26 @@
+\begin{algorithm}[!htbp]
+\caption{Beam search for nearest words with width $L$}
+\label{alg:beam_search}
+\begin{algorithmic}[1]
+\Require For each district $i\in[I]$, a list $C_i=\{(d_{i,k}, \ell_{i,k})\}_{k=1}^K$ of candidate letters sorted by $d_{i,k}$
+\State $B \gets [(0, [])]$ \Comment{beam of (distance, partial word)}
+\For{$i=1$ \textbf{to} $I$}
+    \State $H \gets$ empty max-heap keyed by negative distance \Comment{keeps track of $L$ minimum distances}
+    \ForAll{$(D,s)\in B$}
+        \ForAll{$(d,\ell)\in C_i$}
+            \If{$\ell \in s$}
+                \State \textbf{continue} \Comment{avoid repeated letters}
+            \EndIf
+            \State $D' \gets D + d$
+            \State $s' \gets \mathrm{append}(s,\ell)$
+            \State \Call{HeapPush}{$H,(D',s')$}
+            \If{$\Call{HeapSize}{H} > L$}
+                \State \Call{HeapPopMax}{H} \Comment{discard the current worst (largest-distance) candidate}
+            \EndIf
+        \EndFor
+    \EndFor
+    \State $B \gets$ elements of $H$ sorted by increasing distance
+\EndFor
+\State \Return $B$
+\end{algorithmic}
+\end{algorithm}

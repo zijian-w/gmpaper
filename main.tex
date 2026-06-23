@@ -1,0 +1,75 @@
+\documentclass{amsart}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bbm}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{placeins}
+\usepackage{tikz}
+\usepackage{graphicx}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{lineno}
+
+\graphicspath{{figures/}{writeup/figures/}}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5em}
+
+\title{Towards stratified sampling for redistricting plans}
+\author[ZW, GH, JY, JM, AG]{Zijian Wang, Gregory J. Herschlag, Joon-Hyeok Yim,\\ Jonathan C. Mattingly, and Anna C. Gilbert}
+\thanks{%
+(ZW) Department of Applied and Computational Mathematics, Yale University, New Haven, CT 06511, USA\\
+\indent(GH) Department of Mathematics, Duke University, Durham, NC 27708 USA\\
+\indent(JY) Department of Electrical \& Computer Engineering, Yale University, New Haven, CT 06511, USA\\
+\indent(JM) Department of Mathematics, Duke University, Durham, NC 27708 USA\\
+\indent(AG) Department of Statistics \& Data Science, Yale University, New Haven, CT 06511, USA\\
+\indent E-mail addresses: \url{zijian.wang@yale.edu}, \url{gjh@math.duke.edu}, \url{joon-hyeok.yim@yale.edu}, \url{jonm@duke.edu}, \url{anna.gilbert@yale.edu}\\
+\indent Date: \today
+}
+
+
+\newtheorem{definition}{Definition}
+\newtheorem{remark}{Remark}
+
+\newcommand{\be}{\mathbb{E}}
+\newcommand{\bp}{\mathbb{P}}
+\newcommand{\br}{\mathbb{R}}
+\newcommand{\ind}{\mathbbm{1}}
+\newcommand{\rev}[1]{\textcolor{red}{#1}}
+
+%algo name camel case macro
+\newcommand{\hccultra}{\textsc{HccUltraFit}}
+\newcommand{\beamsearch}{\textsc{BeamSearch}}
+\newcommand{\greedysubcover}{\textsc{GreedySubcover}}
+
+\begin{document}
+\linenumbers
+
+\begin{abstract}
+Rapid algorithmic developments have accelerated the sampling of redistricting ensembles, yet evaluating rare events and sampling complex target measures remains a core challenge due to the high-dimensional and combinatorial nature of the phase space.
+To address this and enable variance reduction techniques like stratified sampling, we introduce a scalable computational pipeline to stratify the space of redistricting plans.
+We achieve this by clustering districts into representative ``letters'', and then use them to build representative plans (``words'').
+A partition of unity over these words corresponds to a soft assignment to a set of strata, allowing us to empirically estimate the flux between strata, as well as stratum weights.
+Our work provides a solid foundation for stratified sampling to distributions on redistricting plans.
+We demonstrate our computational pipeline using real-world redistricting datasets from Connecticut and North Carolina.
+\end{abstract}
+
+\maketitle
+\input{sections/introduction}
+\input{sections/background}
+\input{sections/problem_setup}
+\input{sections/methodology}
+\input{sections/numerical_experiments}
+\input{sections/future_directions}
+\input{sections/conclusion}
+
+\newpage
+\bibliographystyle{plain}
+\bibliography{sample}
+
+\end{document}

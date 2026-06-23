@@ -1,0 +1,28 @@
+\section{Future Directions}\label{sec:chap4 future_directions}
+
+The natural next step is to use this stratification to run stratified sampling to estimate a plan-level observable of interest $f$, for instance, democratic vote shares.
+Let $\pi$ be the target distribution $e^{-J(x)}$ and $\{\phi_s\}_{s\in[S]}$ be the POU that we construct using the pipeline introduced in this paper.
+We define the tilted stratum distributions by 
+    \begin{align}
+        \pi_s(x)\propto e^{-J_s(x)},\quad\quad J_s(x):=J(x)-\phi_s(x).
+    \end{align}
+Using the same method (e.g. cycle walk), we sample $S$ chains with the biased energy $J_s(x)$.
+The Metropolis-Hastings steps need to be adjusted to satisfy detailed balance with respect to the tilted measures $\pi(s)$.
+We then apply standard fix-point iterations methods to recover the normalizing factors $z_s$, so that we can estimate $f$ by
+    \begin{align}
+        \mathbb{E}_\pi[f]:=\sum_{s=1}^Sz_s\mathbb{E}_{\pi_s}[f].
+    \end{align}
+Ideally, each chain focus on plans around a different word $w_s\in\mathcal{S}$, which allows for more accurate estimates of the observables.
+
+Another interesting direction is to adaptively update the alphabet as we obtain new data, so that the alphabet still captures the motifs in district space.
+This can be useful when the original sample used to construct the alphabet is too small, or when the target distribution changes drastically, causing new motifs to appear.
+Re-running hierarchical clustering from scratch after each new sample can be costly.
+On the other hand, most hierarchical procedures are not designed for streaming data.
+Online hierarchical clustering has been studied, but under different objectives~\cite{menon2019online}.
+If we expect localized updates, i.e. $K$ does not change.
+We can assign new data to closest centroids (i.e. Rocchio classification) and run a few $K$-median iterations (if necessary) to ensure that the letters reflect their corresponding clusters.
+While this approach is intuitive and computationally cheap, the hierarchical structure is broken and it is not clear whether the theoretical guarantees~\cite{DBLP:journals/corr/abs-2409-01010} are preserved.
+
+Finally, sampling parameters can substantially change district distributions.
+For a target such as $\gamma=1.0$, we may learn better letters from an intermediate distribution, such as $\gamma=0.5$, than from a distant baseline such as $\gamma=0.0$.
+We can also form a shared alphabet by taking, and possibly pruning, the union of letters learned across several values of $\gamma$.

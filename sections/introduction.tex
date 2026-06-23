@@ -1,0 +1,55 @@
+\section{Introduction}
+Members of the U.S. House of representatives are elected every two years, with a total of $435$ seats apportioned among the states based on population counts from the census~\cite{eckman2019apportionment}.
+States that have more than one seat must draw congressional districts and elect one representative per district.
+As population distributions shift, district boundary lines are usually redrawn after each census, subject to both federal and state rules.
+Since the exact placement of these boundaries can heavily influence election outcomes, the redistricting process is persistently controversial.
+Disputes over partisan or racial gerrymandering frequently lead to extensive litigation.
+To objectively evaluate whether a redistricting plan has been unfairly manipulated, courts increasingly take into account computational methods~\cite{mattingly2021expert,mattingly2019expert}.
+
+Mathematically, a redistricting plan is a partition of a state's basic geographic or voting units (e.g., precincts) into a fixed number of districts.
+These units naturally form a planar graph that encodes geographical contiguity constraints.
+A standard way to quantify whether an enacted or proposed redistricting plan is unusual is to compare it against an ensemble of plans that follow similar legal and geographical constraints.
+To produce statistically meaningful counterfactuals and hypotheticals, one measures observables of interest~\cite{mattingly2014redistricting,fifield2015new} like voting patterns, demographic distributions, etc., on the ensemble to see whether the enacted plan is typical with respect to the ensemble.
+Such ensembles are typically specified via score functions that encode constraints~\cite{mattingly2014redistricting}.
+This inspires a large body of work related to drawing ``representative'' redistricting plans ostensibly uniformly at random from all such allowable plans, typically done via MCMC simulations.
+Recent algorithmic advances make it feasible to generate large ensembles under increasingly nuanced constraints, for instance, via reversible forest-based merge-split samplers~\cite{autry2020multi,autry2023metropolized} and Cycle Walk~\cite{cyclewalk}.
+
+
+Despite rapid progress in sampling algorithms, evaluating rare events and exploring complex target measures remains a persistent challenge in the study of redistricting ensembles.
+For instance, it is well known that existing samplers exhibit low acceptance rates and slow convergence when the target measure deviates from the tree-count measure~\cite{autry2020multi,cyclewalk}.
+To use variance-reduction techniques like stratified sampling, we must first stratify the phase space.
+Also known historically in computational chemistry as umbrella sampling~\cite{torrie1977nonphysical}, this approach has become a popular technique for sampling rare events, as well as complex measures~\cite{dinner2020stratification}.
+Recent works extend this approach to nonequilibrium sampling via trajectory stratification~\cite{dinner2018trajectory}.
+% strata / a set of strata / a stratum
+A key prerequisite for stratified sampling is that we need strata that cover the phase space, while maintaining suitable overlaps.
+In computational chemistry applications, the underlying phase space is usually an interval, or, more generally a subset of $\mathbb{R}^n$, where there are several canonical ways to construct strata with desired features.
+However, it is not immediately clear how to construct such strata over the space of redistricting plans, which is discrete and combinatorial.
+Three features make the stratification of redistricting plans particularly challenging: (i) small local boundary moves can produce distinct plans that are, for practical purposes, ``almost the same'', so any useful notion of similarity must capture essential structure while ignoring inconsequential boundary noise; (ii) plans are unordered tuples of districts, so comparing two plans typically requires solving a district-matching problem, which is expensive at scale; and (iii) clustering plans directly can be computationally heavy and may obscure district-level structure, since variation in one district can be largely independent of variation in another.
+
+In this paper, we build a scalable computational pipeline that stratifies redistricting plans. 
+We address the aforementioned challenges by first clustering at the district level and then using that structure to build plan-level strata.
+This district-level clustering step addresses (i) by grouping together similar districts, and it addresses (iii) by retaining district-level granularity that can be obscured if we directly perform plan-level clustering.
+We use a beam-search heuristic to identify, for each plan, a small set of candidate nearest-neighbor words when constructing the strata.
+As the first step of the pipeline, we collect districts appearing across the ensemble and cluster them with a hierarchical correlation clustering algorithm \hccultra~\cite{DBLP:journals/corr/abs-2409-01010} under a population-weighted symmetric-difference metric, producing a small ``alphabet'' of representative districts (``letters'').
+Each plan is then encoded as an unordered tuple of letters (a ``word'').
+Because only a small fraction of all possible words correspond to viable plans, we construct a representative word set near the observed samples from the ensemble via a beam search that expands partial words district-by-district while retaining only the best candidates.
+Next, we define a partition of unity (POU) that softly assigns each plan to its nearest words.
+In this paper, we provide the framework rather than fixing one specific POU formula, allowing for flexibility when applying this framework to stratified sampling.
+In practice, one may need to adjust the weighting according to empirical mixing performance.
+Nevertheless, we estimate a stationary distribution over strata and an associated flux matrix with a prescribed POU to demonstrate the plausibility of our method.
+We illustrate the pipeline on two real-world examples: Connecticut (small-scale) and North Carolina (large-scale). 
+The small-scale Connecticut example provides a better understanding of the words that we construct, since Connecticut only has five districts.
+On the other hand, North Carolina has fourteen districts and much more precincts.
+We use the North Carolina example to demonstrate the scalability of our pipeline on large-scale datasets.
+
+\medskip
+\noindent\textbf{Road map}
+%labels compatible with thesis chapter
+\begin{itemize}
+    \item Section~\ref{sec:chap4 background} provides background on the three ingredients in our pipeline: redistricting ensemble sampling, stratified sampling, and hierarchical clustering.
+    \item Section~\ref{sec:chap4 notation_setup} formalizes notation for districts and plans; defines district-level and plan-level distances; introduces letters and words; defines the POU, weights and flux matrix.
+    \item Section~\ref{sec:chap4 methodology} details the full pipeline: data generation, hierarchical clustering for building letters, and beam search for candidate words; specifies strategies for choosing alphabet size and word pruning (when overlap is large).
+    \item Section~\ref{sec:chap4 numerical_experiments} applies the pipeline to two real-world examples with different sizes (Connecticut and North Carolina).
+    \item Section~\ref{sec:chap4 future_directions} discusses next steps, including running full stratified sampling using the strata constructed with the pipeline, and updating the alphabet for new data.
+    \item Section~\ref{sec:chap4 conclusion} concludes the paper.
+\end{itemize}
