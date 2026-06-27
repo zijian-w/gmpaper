@@ -95,16 +95,24 @@ As a first step, we calibrate the iso parameter to obtain, for each $\gamma$ fro
 \begin{figure}[!htbp]
     \centering
     \includegraphics[width=1.0\linewidth]{figures/iso_calibration.png}
-    \caption{iso calibration}
+    \caption{Calibration of the isoperimetric parameter for target measures indexed by $\gamma$. Left: the calibrated iso value chosen for each $\gamma$. Middle: the resulting isoperimetric-score distributions remain comparable across $\gamma$, with shaded bands showing the middle $50\%$, $80\%$, and $98\%$ intervals and markers showing medians. Right: the corresponding distributions of log spanning-forest counts decrease as $\gamma$ increases.}
     \label{fig:iso_calibration}
 \end{figure}
-We run our pipeline for $\gamma$ from $0$ to $1$ and compare the spectral gap of the flux matrix. For each $\gamma$, we use two independent runs to show consistency.
+We run our pipeline for $\gamma$ from $0$ to $1$ and compare the spectral gap of the flux matrix.
+We first examine the effect of the POU temperature and pruning threshold on one seed, then fix $\eta=0.70$ and $T=10$ and repeat the computation with two independent runs to show consistency.
 \FloatBarrier
 \begin{figure}[!htbp]
     \centering
-    \includegraphics[width=1.0\linewidth]{figures/spectral_gap_two_seeds.png}
-    \caption{spectral gap two seeds}
-    \label{fig:spectral_gap_two_seeds}
+    \includegraphics[width=1.0\linewidth]{figures/ct_transfer_spectral_gap_seed_A_by_temperature.png}
+    \caption{Spectral gap of the flux matrix $F$ in \eqref{eq:flux} for seed A as $\gamma$ varies. Each panel fixes the temperature $T$ in the POU kernel \eqref{eq:psi_relative}, while colors indicate the threshold ratio $\eta$ used in Algorithm~\ref{alg:eta_greedy_subcover}. The gap decreases for different reasons: as $\gamma$ increases, the target distribution drifts away from the $\gamma=0$ distribution used to construct the strata, while larger $T$ concentrates each word on closer plans and therefore reduces its effective support.}
+    \label{fig:ct_transfer_spectral_gap_seed_A_by_temperature}
+\end{figure}
+\FloatBarrier
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=1.0\linewidth]{figures/ct_transfer_eta_0.70_T_10.png}
+    \caption{Comparison of two independent runs as $\gamma$ varies, with $\eta=0.70$ and $T=10$, where $\eta$ is the threshold ratio in Algorithm~\ref{alg:eta_greedy_subcover} and $T$ is the temperature in the POU kernel \eqref{eq:psi_relative}. Seeds A and B are independent runs: the left panel shows the spectral gap of the flux matrix $F$ in \eqref{eq:flux}, the middle panel shows the Frobenius norm $\|F_A-F_B\|_F$, and the right panel shows the $\ell^2$ distance $\|z_A-z_B\|_2$ between the stationary distributions.}
+    \label{fig:ct_transfer_eta_0.70_T_10}
 \end{figure}
 
 % internal comment: we have nc results but it's incomplete so i don't plan to include it
