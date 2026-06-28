@@ -14,6 +14,7 @@
 \usepackage{algorithm}
 \usepackage{algpseudocode}
 \usepackage{lineno}
+\usepackage{xspace}
 
 \graphicspath{{figures/}{writeup/figures/}}
 
@@ -43,7 +44,7 @@
 \newcommand{\rev}[1]{\textcolor{red}{#1}}
 
 %algo name camel case macro
-\newcommand{\hccultra}{\textsc{HccUltraFit}}
+\newcommand{\hccultra}{\textsc{HccUltraFit}\xspace}
 \newcommand{\beamsearch}{\textsc{BeamSearch}}
 \newcommand{\greedysubcover}{\textsc{GreedySubcover}}
 
@@ -56,7 +57,7 @@ To address this and enable variance reduction techniques like stratified samplin
 We achieve this by clustering districts into representative ``letters'', and then use them to build representative plans (``words'').
 A partition of unity over these words corresponds to a soft assignment to a set of strata, allowing us to empirically estimate the flux between strata, as well as stratum weights.
 Our work provides a solid foundation for stratified sampling to distributions on redistricting plans.
-We demonstrate our computational pipeline using real-world redistricting datasets from Connecticut and North Carolina.
+We demonstrate our computational pipeline using real-world congressional redistricting data from Connecticut.
 \end{abstract}
 
 \maketitle

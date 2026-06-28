@@ -1,16 +1,16 @@
 \begin{algorithm}[!htbp]
-\caption{Two-stage greedy subcover with ratio $\eta$}
+\caption{Two-stage greedy subcover with parameter $\eta$}
 \label{alg:eta_greedy_subcover}
 \begin{algorithmic}[1]
-\Require Distance matrix $D\in\mathbb{R}^{M\times|\mathcal{S}|}$; threshold ratio $\eta\in(0,1)$
+\Require Distance matrix $D\in\mathbb{R}^{M\times|\mathcal{S}|}$; total population $W$; threshold parameter $\eta>0$
 \State $\tau \gets\max_m \min_{s\in\mathcal{S}}D_{m,s}$
-\State $\tau' \gets \eta\tau$
-\State $A_{\tau'}\gets\ind\{D\leq\tau'\}$
+\State $\tau_\eta \gets \eta W$
+\State $A_{\tau_\eta}\gets\ind\{D\leq\tau_\eta\}$
 \State $A_\tau\gets\ind\{D\leq\tau\}$
-\State $(\mathcal{S}_{\tau'},U_{\tau'}) \gets \Call{GreedySubcover}{A_{\tau'}}$
-\State $A_\tau^{\mathrm{rem}}\gets A_\tau$ restricted to rows $U_{\tau'}$ and columns $\mathcal{S}\setminus\mathcal{S}_{\tau'}$
+\State $(\mathcal{S}_{\tau_\eta},U_{\tau_\eta}) \gets \Call{GreedySubcover}{A_{\tau_\eta}}$
+\State $A_\tau^{\mathrm{rem}}\gets A_\tau$ restricted to rows $U_{\tau_\eta}$ and columns $\mathcal{S}\setminus\mathcal{S}_{\tau_\eta}$
 \State $(\mathcal{S}_\tau,U_\tau) \gets \Call{GreedySubcover}{A_\tau^{\mathrm{rem}}}$
-\State $\mathcal{S}_\eta \gets \mathcal{S}_{\tau'}\cup\mathcal{S}_\tau$
+\State $\mathcal{S}_\eta \gets \mathcal{S}_{\tau_\eta}\cup\mathcal{S}_\tau$
 \State \Return $\mathcal{S}_\eta$
 \end{algorithmic}
 \end{algorithm}

@@ -1,12 +1,12 @@
-\section{Problem setup and notations}\label{sec:chap4 notation_setup}
+\section{Problem setup and notation}\label{sec:chap4 notation_setup}
 
-Let $V:=[P]$ be the set of basic geographic/voting units in a U.S. state and let $w_1,w_2,\dots w_P$ be the population in each unit.
+Let $V:=[P]$ be the set of basic geographic/voting units in a U.S. state and let $w_1,w_2,\dots,w_P$ be the population in each unit.
 The map of the U.S. state induces a graph $G=(V,E)$, where two vertices are connected if they are geographically adjacent.
 A congressional plan is a partition of the set of precincts $V$ into $I$ districts, where $I$ is determined by the number of U.S. House seats the state has after apportionment~\cite{eckman2019apportionment}.
-At a high-level, a plan is admissible if it satisfies a number of constraints.
+At a high level, a plan is admissible if it satisfies a number of constraints.
 For instance, it needs to be balanced (up to a certain population deviation threshold) and satisfy contiguity (i.e. geographically connected).
 
-It is convenient to view a district $v$ as a vector that live in $\mathcal{V}\subset\{0,1\}^P$, where 
+It is convenient to view a district $v$ as a vector that lives in $\mathcal{V}\subset\{0,1\}^P$, where
 \begin{align}
 v_p =
     \begin{cases}
@@ -14,8 +14,8 @@ v_p =
     0, & \text{otherwise.}
     \end{cases}
 \end{align}
-Let $\mathcal{W}:=\mathcal{V}^I/S_I$ be the space of unordered $I$-tuples from $\mathcal{V}$ and $\mathcal{X}\subset\mathcal{W}$ be the subset that forms plans.
-A natural way to define a distance $\mathcal{V}\times\mathcal{V}\to\mathbb{R}$ between two districts $v$ and $v'$ is via a capped population-weighted $l^1$:
+Let $\mathcal{W}:=\mathcal{V}^I/S_I$ be the space of unordered $I$-tuples from $\mathcal{V}$ and let $\mathcal{X}\subset\mathcal{W}$ be the subset of admissible plans.
+A natural way to define a distance $\mathcal{V}\times\mathcal{V}\to\mathbb{R}$ between two districts $v$ and $v'$ is via a capped population-weighted $\ell^1$:
 \begin{align}\label{eq:dist_district}
     d(v,v') := \min\Big(d_{\max}, \sum_{p=1}^{P}|v_p -v'_p|\,w_p\Big).
 \end{align}
@@ -40,12 +40,12 @@ In the three redistricting plans shown in Figure \ref{fig:letter_district_exampl
 \end{figure}
 \FloatBarrier
 To identify districts similar to those in Figure \ref{fig:letter_district_example}, we form $K$ clusters on the district space and reduce the complexity of plans by identifying each district by its centroid.
-Given a cluster of districts $\mathcal{\tilde V}\subset \mathcal{V}$, we define the centroid $\tilde v$ to be the point in $\{0,1\}^P$ that minimizes average distance to all points in $\mathcal{\tilde V}$.
-Under the distance definition \eqref{eq:dist_district}, letters are naturally zero-one valued even if we relax the centroid definition to be an optimization over $[0,1]^P$.
+Given a cluster of districts $\tilde{\mathcal{V}}\subset \mathcal{V}$, we define the centroid $\tilde v$ to be the point in $\{0,1\}^P$ that minimizes the average uncapped weighted $\ell^1$ distance to all points in $\tilde{\mathcal{V}}$.
+Under this centroid objective, letters are naturally zero-one valued even if we relax the optimization over $[0,1]^P$.
 However, letters are not guaranteed to be an existing district.
 An alternative approach is to restrict the distance optimization problem to $\mathcal{V}$.
 In this paper, we call these centroids letters.
-Using $K$ clusters, we obtain an alphabet of size $K$ and can use these letters to form words, which are unordered tuples of letters with fixed size $I$.
+Using $K$ clusters, we obtain an alphabet of size $K$ and can use these letters to form words, which are unordered tuples of letters of fixed size $I$.
 Note that letters are objects in $\{0,1\}^P$ and words are objects in $\mathcal{W}$.
 
 Even after the reduction in district space, we still have an exponentially large word space.
@@ -54,23 +54,24 @@ For instance, we are not interested in words with repeated letters, assuming tha
 Based on this observation, we further reduce the space of words by keeping only the $L$ nearest candidate words for each observed plan $x\in\mathcal{X}$ under $D$ (computed via a beam search with width $L$ in Section~\ref{sec:chap4 methodology}).
 We then work with the union of these candidate sets, which yields a manageable representative word set that is convenient for downstream tasks, e.g. stratified sampling.
 
-Let $\mathcal{S}\subset\mathcal{W}$ be this representative set of words, which forms a set of strata over the space of plans.
+Let $\mathcal{S}\subset\mathcal{W}$ be a representative set of words, which forms a set of strata over the space of plans.
 We construct a soft assignment of plans to strata using a partition of unity (POU) $\{\phi_s\}_{s\in \mathcal{S}}$ over plans $x\in\mathcal{X}$:
 \begin{align}\label{eq:pou}
     \sum_{s\in \mathcal{S}}\phi_s(x)=1,\qquad
     \phi_s(x):=\frac{\psi(x;s)}{\sum_{s'\in \mathcal{S}}\psi(x;s')}.
 \end{align}
-Based on our construction of the words, for each plan $x$ we only evaluate $\psi(x;s)$ on its $L$ nearest candidate words $w_1(x),\dots,w_L(x)\in \mathcal{S}$ and set it to zero otherwise.
+For each plan $x$, let $\mathcal{N}_{\mathcal{S}}(x)\subseteq\mathcal{S}$ denote the retained word neighborhood for that plan, typically the words in $\mathcal{S}$ that appear among its $L$ nearest beam-search candidates.
+Note that $\mathcal{N}_{\mathcal{S}}(x)$ is often smaller than the beam-width due to pruning.
 We define $\psi$ by
 \begin{align}\label{eq:psi_relative}
     \psi(x;s)=
     \begin{cases}
-        \exp\!\big(-T\kappa(D(x,s))), & s\in\{w_1(x),\dots,w_L(x)\},\\
+        \exp\!\big(-T\kappa(D(x,s))), & s\in\mathcal{N}_{\mathcal{S}}(x),\\
         0, & \text{otherwise,}
     \end{cases}
 \end{align}
 where $T\geq 0$ is a temperature parameter controlling sensitivity to distances and $\kappa$ is an $\mathbb{R}\to\mathbb{R}$ function that maps distances (in units of population) into appropriate ranges.
-When $T=0$, the function $\psi$ assigns equal weights to the $L$ nearest words of a given plan $x$.
+When $T=0$, the function $\psi$ assigns equal unnormalized weights to the retained words of a given plan $x$.
 % internal comment: T=0 is what we use for proof of principles. This avoids complication from choice of kappa.
 Let $\pi$ be the target distribution on plans.
 We define the stratum weights by

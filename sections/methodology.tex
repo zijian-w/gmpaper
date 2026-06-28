@@ -16,12 +16,12 @@ Pooling districts across the $M$ plans yields a set of $N$ districts
 \begin{align}
     \mathcal{D} := \{v_1,\dots,v_N\}\subset \mathcal{V},
 \end{align}
-where $N\leq MI$ because plans may contain exactly same districts.
+where $N\leq MI$ because plans may contain the exact same districts.
 We compute the pairwise district-to-district distances according to \eqref{eq:dist_district} and store them in coordinate (COO) format, which is convenient for the clustering algorithms that we use.
-This approach saves memory because we only store the distances below $d_{max}$, especially when $I$ is large.
+This approach saves memory because we only store the distances below $d_{\max}$, especially when $I$ is large.
 
 \subsection{Building letters}
-To find representative districts (``letters''), we cluster the pooled district set $\mathcal{D}$ with \hccultra~\cite{DBLP:journals/corr/abs-2409-01010}, which is a hierarchical correlation clustering algorithm that comes with nice theoretical guarantees.
+To find representative districts (``letters''), we cluster the pooled district set $\mathcal{D}$ with \hccultra~\cite{DBLP:journals/corr/abs-2409-01010}, a hierarchical correlation clustering algorithm with theoretical guarantees.
 To scale the algorithm to large graphs, we optimize memory usage by tracking only the active roots during merging, which avoids storing a dense $2N\times 2N$ matrix as in a naive implementation.
 The most time-consuming step is sorting the edges by distance.
 We therefore bucket-sort the COO distances and parallelize across bins, where bin boundaries are estimated from a small pilot sample.
@@ -31,9 +31,9 @@ To choose $K$, we use the elbow method on a dispersion objective $\mathcal{L}(K)
 Let $\mathcal{D}_1,\mathcal{D}_2,\dots,\mathcal{D}_K$ be the clusters, i.e., a partition of $\mathcal{D}$.
 For each cluster, we define its letter (centroid) $l_k\in\{0,1\}^P$ as the point that minimizes the sum of distances to members of $\mathcal{D}_k$:
 \begin{align}\label{eq:centroid definition}
-    l_k &:= \arg\min_{l\in\{0,1\}^P}\sum_{v\in\mathcal{D}_k}d(l,v),\\
+    l_k &:= \arg\min_{l\in\{0,1\}^P}\sum_{v\in\mathcal{D}_k}d(l,v),
 \end{align}
-Under weighted $l^1$ distance \eqref{eq:dist_district}, this reduces to a precinct-wise median:
+This reduces to a precinct-wise median:
 \begin{align}
     (l_k)_p &=
     \begin{cases}
@@ -71,8 +71,8 @@ See Algorithm~\ref{alg:beam_search} for more details.
     \label{fig:overlap/bipartite}
 \end{figure}
 \FloatBarrier
-For each observed plan $x$, we keep the $L$ best candidates as $w_1(x),\dots,w_L(x)$ and take the union of these sets across the ensemble to form the representitative word set $\mathcal{S}$ used for stratification.
-It maybe helpful to treat plans and words as vertices and think of the beam search process as building the connections in a bipartite graph, as shown in Figure \ref{fig:overlap/bipartite}.
+For each observed plan $x$, we keep the $L$ best candidates as $w_1(x),\dots,w_L(x)$ and take the union of these sets across the ensemble to form the representative word set $\mathcal{S}$ used for stratification.
+It may be helpful to treat plans and words as vertices and think of the beam search process as building the connections in a bipartite graph, as shown in Figure \ref{fig:overlap/bipartite}.
 
 \subsection{Towards stratification}
 The representative word set $\mathcal{S}$ and the plan-level distances $D$ allow us to construct a stratification of the target distribution $\pi$ on plans.
@@ -80,16 +80,16 @@ We start with a partition of unity (POU) $\{\phi_s\}_{s\in\mathcal{S}}$ and defi
 Each $\phi_s(x)$ can be interpreted as a soft-assignment of plan $x$ to stratum $s$, with flow between strata encoded by the flux matrix $F$ in \eqref{eq:flux}.
 
 One key requirement for US to work is coverage, meaning that every plan should have at least one nearby word so that the POU is well-supported.
-In our construction this is ensured by beam search, which yields $L$ candidate words $w_1(x),\dots,w_L(x)$ for each plan $x$ and restricts $\psi(x;s)$ in \eqref{eq:psi_relative} to this neighborhood.
+Before pruning, this is ensured by beam search, which yields $L$ candidate words $w_1(x),\dots,w_L(x)$ for each plan $x$ and restricts $\psi(x;s)$ in \eqref{eq:psi_relative} to this neighborhood.
 Another important requirement of US is that strata have appropriate overlaps.
 Some overlap is necessary for communication between strata, but excessively large overlap can lead to slow convergence (as well as numerical instability) of EMUS-style fixed-point iterations.
-In practice, the temperature $T$ and the choice of $\kappa$ in \eqref{eq:psi_relative} are the primary control knobs that we can tune to reach desired coverage and overlap.
+In practice, the balance bewteen overlap and coverage can be controlled by beam-width and pruning threshold, while the temperature $T$ and the choice of $\kappa$ in \eqref{eq:psi_relative} tune the effective overlap within the word neighborhoods.
 By construction, the induced coarse dynamics on $\mathcal{S}$ has stationary distribution $z$:
 \begin{align}
     \pi(x) &= \sum_{s\in\mathcal{S}} z_s\,\pi_s(x),\qquad
     z^\top F = z^\top,
 \end{align}
-which we use as a diagnostic to see whether the strata design is fit for stratified sampling.
+which we use as a diagnostic to see whether the strata design is suitable for stratified sampling.
 
 Actually running stratified sampling requires additional sampling work (e.g., parallel chains targeting $\{\pi_s\}$), whereas here we focus on setting up a reasonable stratification of plan space and the associated overlap statistics.
 When overlap is very large and $\mathcal{S}$ becomes highly redundant, we may prune the strata by solving a set-cover problem induced by the plan--word bipartite graph.
@@ -106,23 +106,26 @@ The problem of deciding whether there is a subcover smaller than some fixed size
 In our setting, the adjacency matrix is obtained by thresholding plan--word distances, so the choice of radius matters.
 A large radius improves coverage but may connect plans to distant words, while a small radius gives tighter strata but may leave some observed plans uncovered.
 Let $D$ be the plan-to-word distance matrix.
-We set the larger threshold to the worst nearest-word distance over all plans,
+We set the bigger threshold to the worst nearest-word distance over all plans,
 \begin{align}
     \tau:=\max_m\min_{s\in\mathcal{S}}D_{m,s},
 \end{align}
 so every observed plan is covered at radius $\tau$.
-We parameterize the smaller threshold by the ratio $\eta\in(0,1)$ and set $\tau':=\eta\tau$.
+For the first stage, let $W:=\sum_{p=1}^P w_p$ be the total population and choose a population-scaled core radius
+\begin{align}
+    \tau_\eta:=\eta W,\qquad \eta>0.
+\end{align}
 Thus, $\eta$ is the only parameter that needs to be chosen.
 The two thresholds define adjacency matrices
 \begin{align}
-    A_{\tau'}:= \ind\{D\leq \tau'\},\quad\quad A_\tau:= \ind\{D\leq \tau\},
+    A_{\tau_\eta}:= \ind\{D\leq \tau_\eta\},\quad\quad A_\tau:= \ind\{D\leq \tau\},
 \end{align}
 where the indicator function is applied element-wise.
-The first greedy subcover at radius $\tau'$ gives $\mathcal{S}_{\tau'}$.
+The first greedy subcover at radius $\tau_\eta$ gives $\mathcal{S}_{\tau_\eta}$.
 If any plans remain uncovered, the second greedy subcover at radius $\tau$ is restricted to those plans and to words not selected in the first stage, and gives $\mathcal{S}_\tau$.
 We define the pruned set as
 \begin{align}
-    \mathcal{S}_\eta:=\mathcal{S}_{\tau'}\cup\mathcal{S}_\tau.
+    \mathcal{S}_\eta:=\mathcal{S}_{\tau_\eta}\cup\mathcal{S}_\tau.
 \end{align}
 Algorithm~\ref{alg:eta_greedy_subcover} summarizes this two-stage procedure.
 \input{tables/eta_greedy_cover.tex}
@@ -131,7 +134,7 @@ We end this section by summarizing the methods we use in our analysis pipeline a
 \begin{figure}[!htbp]
     \centering
     \includegraphics[width=0.92\linewidth]{figures/pipeline_flowchart.png}
-    \caption{Overview of the pipeline: districts pooled from an ensemble are clustered into representative district types (letters), each plan is encoded as a unordered tuple of letters (a word), and a beam search enumerates a small neighborhood of candidate words around each plan. A partition of unity over the representative word set then yields stratum weights and a flux matrix summarizing coarse dynamics on words.}
+    \caption{Overview of the pipeline: districts pooled from an ensemble are clustered into representative district types (letters), each plan is encoded as an unordered tuple of letters (a word), and a beam search enumerates a small neighborhood of candidate words around each plan. A partition of unity over the representative word set then yields stratum weights and a flux matrix summarizing coarse dynamics on words.}
     \label{fig:overlap/pipeline_flowchart}
 \end{figure}
 \FloatBarrier

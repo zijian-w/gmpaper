@@ -1,0 +1,22 @@
+{
+  "latex-workshop.latex.tools": [
+    {
+      "name": "latexmk",
+      "command": "/bin/sh",
+      "args": [
+        "-c",
+        "export PATH=/Library/TeX/texbin:/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin; exec /Library/TeX/texbin/latexmk -synctex=1 -interaction=nonstopmode -file-line-error -pdf \"$1\"",
+        "latexmk-wrapper",
+        "%DOC%"
+      ]
+    }
+  ],
+  "latex-workshop.latex.recipes": [
+    {
+      "name": "latexmk",
+      "tools": [
+        "latexmk"
+      ]
+    }
+  ]
+}
